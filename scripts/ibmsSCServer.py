@@ -12,8 +12,8 @@ class IBMSSCServer():
 		self.ibmsspi = IBMSSiPMSPI()
 
 		self.temp=0
-		self.pga1=0
-		self.pga2=0
+		self.gain1=0
+		self.gain2=0
 
 	def get_time(self):
 		return datetime.strftime(datetime.now(), "%Y-%m-%d %H:%M:%S")
@@ -23,14 +23,14 @@ class IBMSSCServer():
 
 	def publishe(self):
         # define socket numbers for push and publish ports
-        lj_port_push = "5556"
-        lj_port_pub = "5566"
+        bb_port_push = "5556"
+        bb_port_pub = "5566"
 
         # create pull socket for receiving commands from GUI
         context = zmq.Context()
         socket_pull = context.socket(zmq.PULL)
-        socket_pull.connect("tcp://localhost:%s" % lj_port_push)
-        print "Connected to server with port %s" % lj_port_push
+        socket_pull.connect("tcp://localhost:%s" % bb_port_push)
+        print "Connected to server with port %s" % bb_port_push
 
         # initialize poll set
         poller = zmq.Poller()
@@ -38,8 +38,8 @@ class IBMSSCServer():
 
         # initialize labjack publisher
         socket_pub = context.socket(zmq.PUB)
-        socket_pub.bind("tcp://*:%s" % lj_port_pub)
-        print "Publish info with port %s" % lj_port_pub
+        socket_pub.bind("tcp://*:%s" % bb_port_pub)
+        print "Publish info with port %s" % bb_port_pub
 
    	# work on requests from any client
         while True:
@@ -52,72 +52,39 @@ class IBMSSCServer():
 
                 # interpret the GUI messages here
                 if msg == "read temp":
-                    print self.lj.read_temp()
-                elif msg == "read gain":
-                    print self.lj.read_gain()
-                elif msg == "read pga":
-                    print self.lj.read_pga()
-                elif msg == "read eeprom":
-                    print self.lj.read_eeprom()
-                elif msg == "read led":
-                    print self.lj.read_led()
-                elif msg[0:10] == "set eeprom":
-                    print self.lj.write_eeprom(int(msg[11:12]), msg[13:29])
-                elif msg[0:7] == "set led":
-                    print self.lj.set_led(int(msg[8:]))
-                elif msg[0:8] == "set gain":
-                    print self.lj.set_gain(int(msg[9:]))
+                    print self.ibmsspi.read_temp()
+                elif msg == "read pga1":
+                    print self.bb.read_gain("pga1")
+                elif msg == "read pga2":
+                    print self.bb.read_gain("pga2")
+                elif msg[0:9] == "set gain1":
+                    print self.bb.set_gain("pga1", int(msg[9:]))
+                elif msg[0:9] == "set gain2":
+                    print self.bb.set_gain("pga2", int(msg[9:]))
                 else:
                     print "Unknown command! Try again."
 
             else:
-                self.temp = self.lj.read_temp()
-                self.gain = self.lj.read_gain()
-                eeprom1 = self.lj.read_eeprom(1)
-                eeprom2 = self.lj.read_eeprom(2)
-                eeprom3 = self.lj.read_eeprom(3)
-                eeprom4 = self.lj.read_eeprom(4)
-                eeprom5 = self.lj.read_eeprom(5)
-                eeprom6 = self.lj.read_eeprom(6)
-                eeprom7 = self.lj.read_eeprom(7)
-                eeprom8 = self.lj.read_eeprom(8)
-                self.serial = self.lj.read_serial()
-                self.led_no = self.lj.read_led()
+                self.temp = self.bb.read_temp()
+                self.gain = self.bb.read_gain("pga1")
+                self.gain = self.bb.read_gain("pga2")
 
-                lj_data = {
+                bb_data = {
                         'time': self.get_time(),
                         'temp': self.temp,
-                        'gain': self.gain,
-                        'eeprom1': eeprom1,
-                        'eeprom2': eeprom2,
-                        'eeprom3': eeprom3,
-                        'eeprom4': eeprom4,
-                        'eeprom5': eeprom5,
-                        'eeprom6': eeprom6,
-                        'eeprom7': eeprom7,
-                        'eeprom8': eeprom8,
-                        'serial': self.serial,
-                        'ledno': self.led_no
+                        'gain1': self.gain1,
+                        'gain2': self.gain2,
                         }
 
-                socket_pub.send_json(lj_data)
+                socket_pub.send_json(bb_data)
 
-if __name__ == "__main__":
 
-	gain=raw_input('please insert gain (<0 = stop): ')
-	gain=int(gain)
-	try:
-		while (gain >= 0):	
-			# this order is important
-			spi.reset_pga("pga1")
-			spi.set_gain("pga1",gain)
-			spi.read_gain("pga1")
-			spi.reset_pga("pga2")
-			spi.set_gain("pga2",gain)
-			spi.read_gain("pga2")
-			spi.read_temperature()	
-			gain=raw_input('please insert gain (0-6, <0 = stop, -100= T & gain loop): ')
-			gain=int(gain) 
+# main function
+def main():
+    slowctrl = SlowControl()
+          procname.setprocname("slowcontrol")
+              Process(target=slowctrl.bk_server, args=()).start()
+                  Process(target=slowctrl.lj_server, args=()).start()
 
-	except KeyboardInterrupt:
-		spi.clean_up()
+if __name__ == '__main__':
+                        main()
