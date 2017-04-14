@@ -1,9 +1,14 @@
+# ibms_sc_server.py
+
 import zmq
 import time
+import sys
 from datetime import date, datetime, tzinfo, timedelta
-import zmq
+import random
+from multiprocessing import Process
 from ibmssipmspi import IBMSSiPMSPI
-
+import json
+import procname
 
 class IBMSSCServer():
 
@@ -81,10 +86,9 @@ class IBMSSCServer():
 
 # main function
 def main():
-    slowctrl = SlowControl()
-          procname.setprocname("slowcontrol")
-              Process(target=slowctrl.bk_server, args=()).start()
-                  Process(target=slowctrl.lj_server, args=()).start()
+	server = IBMSServer()
+	procname.setprocname("ibmsServer")
+	Process(target=, args=()).start()
 
 if __name__ == '__main__':
-                        main()
+	main()
