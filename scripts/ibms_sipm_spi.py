@@ -31,7 +31,7 @@ class IBMSSiPMSPI:
 
 		time.sleep(0.1)
 
-	def read_temperature(self):
+	def read_temp(self):
 		self.chip_select("temp")
 		res = self.spi.xfer2([0x50, 0x00, 0x00])
 		temp = (res[1] << 8 | res[2]) / 128.0
@@ -62,6 +62,7 @@ class IBMSSiPMSPI:
 		self.chip_select("none")
 		gainReg = res[2] >> 4
 		print "[bb<-%s] res = %s, gain = %d (%s)" % (key, res, gainReg, gain_map[gainReg])
+                return gainReg
 
 		#unset read bit
 		self.chip_select(key)
