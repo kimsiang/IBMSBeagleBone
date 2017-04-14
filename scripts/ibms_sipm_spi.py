@@ -35,7 +35,7 @@ class IBMSSiPMSPI:
 		self.chip_select("temp")
 		res = self.spi.xfer2([0x50, 0x00, 0x00])
 		temp = (res[1] << 8 | res[2]) / 128.0
-		print "[bb<-temp] %f deg C" % temp
+		#print "[bb<-temp] %f deg C" % temp
 		return temp
 
 	def reset_pga(self, key):
@@ -45,7 +45,7 @@ class IBMSSiPMSPI:
 
 	def set_gain(self, key,gain_value):
 		self.chip_select(key)
-		print "[bb->%s] set gain = %d" % (key, gain_value)
+		#print "[bb->%s] set gain = %d" % (key, gain_value)
 	        res = self.spi.xfer2([0x3b, 0x00, gain_value << 4])
 		self.chip_select("none")
 
@@ -61,7 +61,7 @@ class IBMSSiPMSPI:
 	        res = self.spi.xfer2([0x3b, 0x00, 0x00])
 		self.chip_select("none")
 		gainReg = res[2] >> 4
-		print "[bb<-%s] res = %s, gain = %d (%s)" % (key, res, gainReg, gain_map[gainReg])
+		#print "[bb<-%s] res = %s, gain = %d (%s)" % (key, res, gainReg, gain_map[gainReg])
                 return gainReg
 
 		#unset read bit
