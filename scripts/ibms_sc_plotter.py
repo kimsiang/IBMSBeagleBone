@@ -1,4 +1,4 @@
-# ibms_sc_client.py
+# ibms_sc_plotter.py
 
 import zmq
 import time
@@ -10,21 +10,13 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 
+context = zmq.Context()
+socket_sub = context.socket(zmq.SUB)
+socket_sub.connect("tcp://localhost:%s" % 5566)
+socket_sub.setsockopt(zmq.SUBSCRIBE, "")
 
-string = './data/IBMSSC_{}.log'
-filename = string.format(self.get_day())
-
-readout = np.loadtxt(filename, usecols=(1, 2, 3, 4),
-		converters={1: strpdate2num('%H:%M:%S')},
-		unpack=True)
-time, temp, gain1, gain2 = readout
-plt.figure(1)
-plt.plot(time[-5000:], temp[-5000:], lw=2)
-plt.title("Temperature")
-plt.ylabel("T [C]")
-plt.xlabel("time [hh:mm]")
-plt.draw()
-#xfmt = mdates.DateFormatter('%H:%M')
-#self.axes3.xaxis.set_major_formatter(xfmt)
-#self.axes3.grid(True, linewidth=1)
-#self.canvas3.draw()
+json_data = socket_sub.recv_json()
+time = json_data['time']
+temp = json_data['temp']
+plt.plot(time, temp)
+plt.show()
