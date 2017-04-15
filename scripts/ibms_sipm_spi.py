@@ -17,17 +17,20 @@ class IBMSSiPMSPI:
 		self.spi.max_speed_hz = 1000000
 
 		for k, pin in chip_map.iteritems():
-			GPIO.setup(pin, GPIO.OUT) 
-			GPIO.output(pin, GPIO.HIGH) 
+			#print "Initialize pin # %s" % pin
+			GPIO.setup('P9_%s' % pin, GPIO.OUT) 
+			GPIO.output('P9_%s' % pin, GPIO.HIGH) 
 
 	def chip_select(self, key):
 		for k, pin in chip_map.iteritems():
-			GPIO.output(pin, GPIO.HIGH)
+			#print "Set pin # %s to HIGH" % pin
+			GPIO.output('P9_%s' % pin, GPIO.HIGH)
 
 		time.sleep(0.1)
 
 		if chip_map.get(key):
-			GPIO.output(chip_map[key], GPIO.LOW)
+			#print "Set pin # %s to LOW" % chip_map[key]
+			GPIO.output('P9_%s' % chip_map[key], GPIO.LOW)
 
 		time.sleep(0.1)
 
@@ -43,13 +46,15 @@ class IBMSSiPMSPI:
 		res = self.spi.xfer2([0x00, 0x00, 0x01])
 		self.chip_select("none")
 
-	def set_gain(self, key,gain_value):
+	def set_gain(self, key, gain_value):
+		self.reset_pga(key)
 		self.chip_select(key)
-		#print "[bb->%s] set gain = %d" % (key, gain_value)
+		#print "[bb->%s] set gain = %d" % (key, int(gain_value))
 	        res = self.spi.xfer2([0x3b, 0x00, gain_value << 4])
 		self.chip_select("none")
 
 	def read_gain(self, key):
+		self.reset_pga(key)
 		#set read bit
 		self.chip_select(key)
        		res = self.spi.xfer2([0x00, 0x00, 0x02])

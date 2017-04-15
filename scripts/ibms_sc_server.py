@@ -58,31 +58,39 @@ class IBMSSCServer():
 	
 	                # interpret the GUI messages here
 	                if msg == "read temp":
-	                    print self.ibmsspi.read_temp()
+	                    print 'temp: {} C'.format(self.ibmsspi.read_temp())
 	                elif msg == "read pga1":
-	                    print self.ibmsspi.read_gain("pga1")
+	                    print 'gain1: {}'.format(self.ibmsspi.read_gain("pga1"))
 	                elif msg == "read pga2":
-	                    print self.ibmsspi.read_gain("pga2")
-	                elif msg[0:9] == "set gain1":
-	                    print self.ibmsspi.set_gain("pga1", int(msg[9:]))
-	                elif msg[0:9] == "set gain2":
-	                    print self.ibmsspi.set_gain("pga2", int(msg[9:]))
+	                    print 'gain2: {}'.format(self.ibmsspi.read_gain("pga2"))
+	                elif msg[0:8] == "set pga1":
+	                    print self.ibmsspi.set_gain("pga1", int(msg[8:]))
+	                elif msg[0:8] == "set pga2":
+	                    print self.ibmsspi.set_gain("pga2", int(msg[8:]))
 	                else:
 	                    print "Unknown command! Try again."
 	
 	            else:
 	                self.temp = self.ibmsspi.read_temp()
-        	        #self.gain = self.ibmsspi.read_gain("pga1")
-	                #self.gain = self.ibmsspi.read_gain("pga2")
+        	        self.gain1 = self.ibmsspi.read_gain("pga1")
+	                self.gain2 = self.ibmsspi.read_gain("pga2")
+			time= self.get_time()
 	
 	                bb_data = {
-	                        'time': self.get_time(),
+	                        'time': time,
 	                        'temp': self.temp,
 	                        'gain1': self.gain1,
 	                        'gain2': self.gain2,
 	                        }
 
         	        socket_pub.send_json(bb_data)
+			
+			# dump sc data into a file
+			string = './data/IBMSSC_{}.log'
+			fdata = open(string.format(self.get_day()), "a+")
+			string = '{0} {1} {2} {3}'
+			data = string.format(time,self.temp,self.gain1,self.gain2) 
+            		print >> fdata, data
 
 
 # main function

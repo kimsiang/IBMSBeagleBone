@@ -12,8 +12,14 @@ context = zmq.Context()
 print("Connecting IBMS SC Server")
 socket = context.socket(zmq.PUSH)
 socket.bind("tcp://*:5556")
-#print("Sending request")
-socket.send ("read temp")
+print("Sending request")
+
+socket.send ("set pga1 3")
+socket.send ("set pga2 3")
+while True:
+	socket.send ("read temp")
+#	socket.send ("read pga1")
+	time.sleep(1)
 
 context = zmq.Context()
 socket_sub = context.socket(zmq.SUB)
@@ -23,7 +29,7 @@ socket_sub.connect("tcp://localhost:%s" % 5566)
 socket_sub.setsockopt(zmq.SUBSCRIBE, "")
 
 
-while True:
-	json_data = socket_sub.recv_json()
-	print('{0}'.format(json_data))
-	#print json_data['temp']
+#while True:
+#	json_data = socket_sub.recv_json()
+#	print('{0}'.format(json_data))
+#	#print json_data['temp']
